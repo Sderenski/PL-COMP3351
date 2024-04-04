@@ -105,7 +105,6 @@ test-suite Examples-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      ExamplesOneSpec
       ExamplesTwoSpec
       Paths_Examples
   hs-source-dirs:
