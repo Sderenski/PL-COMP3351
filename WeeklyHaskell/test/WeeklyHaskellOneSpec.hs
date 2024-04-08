@@ -1,0 +1,2 @@
+module WeeklyHaskellOneSpec where
+    
