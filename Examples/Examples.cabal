@@ -26,6 +26,7 @@ library
   exposed-modules:
       ExamplesOne
       ExamplesTwo
+      ExampleThree
       Lib
   other-modules:
       Paths_Examples
