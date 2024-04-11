@@ -51,19 +51,22 @@ module ExampleThree where
     -- MergeSort
     --   Consumes a list of MergeSort
     --   Produce a sorted list of the given Integers
-    mergeSort [] = []
-    mergeSort [q] = [q]
-    mergeSort [q,r] = if q < r then [r,q] else [q,r]
-    mergeSort theList = let lowerList = take (length theList)/2 theList
-                            upperList = drop (length theList)/2 theList
+    mergesort :: (Ord a) => [a] -> [a]
+    mergesort [] = []
+    mergesort [q] = [q]
+    mergesort [q,r] = if q > r then [r,q] else [q,r]
+    mergesort theList = 
+        let low = take (length theList `div` 2) theList
+            upperlist = drop (length theList `div` 2) theList
                         in
-                            merge (mergeSort lowerList) (mergeSort upperList)
+                            merge (mergesort low) (mergesort upperlist)
 
     -- Helper Function for MergeSort
 
     --Merge
     --  Consume two in order lists of integers
     --  produces one in order list of integers
+    merge :: Ord a => [a] -> [a] -> [a]
     merge [] [] = []
     merge (a:as) [] = a:as
     merge [] (b:bs) = b:bs
