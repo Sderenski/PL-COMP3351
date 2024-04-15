@@ -6,9 +6,9 @@ module WeeklyHaskellOne where
     --     Removes all instances of the character removed from the OG string
     removeChar :: Char -> [Char] -> [Char]
     removeChar c [] = []
-    removeChar c (q:qs) = if c == q 
-                            then removeChar c qs 
-                            else q : removeChar c qs 
+    removeChar c (q:qs) = if c == q
+                            then removeChar c qs
+                            else q : removeChar c qs
 
     --RemoveWhitespace
     --   Consumes String
@@ -16,20 +16,15 @@ module WeeklyHaskellOne where
     --      removes all spaces, tabs, newlines, and carriage returns
     -- ' ' - Space, '\t' - tab, '\n' - new lines, '\r' - carriage return
     removeWhitespace :: [Char] -> [Char]
-    removeWhitespace [] = []
-    -- removeWhitespace (q:qs) 
-
-
-
-
-
-
+    removeWhitespace = removeChar ' ' . removeChar '\t' . removeChar '\n' . removeChar '\r'
 
 
     --RemovePunctuation
     --   Consumes a string
     --   Produces new string
     --      removes all commas, periods, parentheses, brackets
+    removePunctuation :: [Char] -> [Char]
+    removePunctuation = removeChar ',' . removeChar '(' . removeChar ')' . removeChar '[' . removeChar ']' . removeChar '.' . removeChar '{' . removeChar '}'
 
 
 
@@ -57,12 +52,13 @@ module WeeklyHaskellOne where
     --shiftInts
     --   Consume an integer(shift value) and list of integers(ASCII values)
     --   Produces a new list of integers where each value in the list has been shifted
-    
-    shiftInts :: (Ord a, Num a) => a -> [a] -> [a]
+
+    shiftInts :: Int -> [Int] -> [Int]
     shiftInts i [] = []
-    shiftInts i (q:qs) = if (q + i) > 127 
-                            then (q + i) - 128 : shiftInts i qs 
-                            else q + i : shiftInts i qs
+    shiftInts i (q:qs)
+      | (q + i) > 127 = (q + i) - 128 : shiftInts i qs
+      | (q + i) < 0 = (q + i) + 128 : shiftInts i qs
+      | otherwise = q + i : shiftInts i qs
 
     --shiftMessage
     --    Consumes an integer (the shift value) and a string (the message)
