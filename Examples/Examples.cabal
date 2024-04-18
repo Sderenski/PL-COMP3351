@@ -24,10 +24,12 @@ source-repository head
 
 library
   exposed-modules:
+      ExamplesFour
       ExamplesOne
       ExamplesTwo
       ExampleThree
       Lib
+      MapExamples
   other-modules:
       Paths_Examples
   hs-source-dirs:
