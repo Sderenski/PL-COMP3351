@@ -5,7 +5,7 @@ module WeeklyHaskellOne where
     --  Produces a new string
     --     Removes all instances of the character removed from the OG string
     removeChar :: Char -> [Char] -> [Char]
-    removeChar c [] = []
+    removeChar _ [] = []
     removeChar c (q:qs) = if c == q
                             then removeChar c qs
                             else q : removeChar c qs
@@ -54,7 +54,7 @@ module WeeklyHaskellOne where
     --   Produces a new list of integers where each value in the list has been shifted
 
     shiftInts :: Int -> [Int] -> [Int]
-    shiftInts i [] = []
+    shiftInts _ [] = []
     shiftInts i (q:qs)
       | (q + i) > 127 = (q + i) - 128 : shiftInts i qs
       | (q + i) < 0 = (q + i) + 128 : shiftInts i qs
@@ -64,5 +64,5 @@ module WeeklyHaskellOne where
     --    Consumes an integer (the shift value) and a string (the message)
     --    Produces a new string which is the encrypted messaged
     shiftMessage :: Int -> [Char] -> [Char]
-    shiftMessage i [] = []
+    shiftMessage _ [] = []
     shiftMessage i message = asciiToChars (shiftInts i (charsToAscii message))
