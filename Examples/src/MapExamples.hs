@@ -19,11 +19,26 @@ module MapExamples where
     squareMap :: Num a => [a] -> [a]
     squareMap = map square
 
+    -- the use of a lambda function
     squareMap' :: [Integer] -> [Integer]
     squareMap' = map (\n -> n * n)
 
     doubleString :: [String] -> [String]
     doubleString = map (\s -> s ++ s)
+
+    zipList :: [Integer] -> [Integer] -> [(Integer, Integer)]
+    zipList [] [] = []
+    zipList _ [] = []
+    zipList [] _ = []
+    zipList (x:xs) (y:ys) = (x,y) : zipList xs ys
+
+    unzipList :: [(Integer, Integer)] -> ([Integer], [Integer])
+    unzipList x = ( [a | (a,_) <- x],
+                    [b | (b,_) <-x] )
+
+    unzipList' x = ( map fst x, map snd x)
+
+    unzipList'' x = ( map (\(a,b) -> a) x, map (\(a,b) -> b) ) 
 
     --Filter
     --  Another Example of 'Higher Order Function'
@@ -37,5 +52,26 @@ module MapExamples where
     -- example: foldl (++) [] ["hello", "bye"] -> "hellobye"
     -- foldl :: (a -> b -> a) -> a -> [a] -> a
     
+    boolAnd :: [Bool] -> Bool
+    boolAnd [] = True
+    boolAnd (b:bs) = b && (boolAnd bs)
+
+    boolAnd' :: [Bool] -> Bool
+    boolAnd' = foldl (&&) True
+
+    boolAnd'' :: [Bool] -> Bool
+    boolAnd'' = foldr (&&) True
+
+    addList :: (Num a) => [a] -> a
+    addList = foldl (+) 0
+
+    min' :: (Num a, Ord a) => [a] -> Maybe a
+    min' [] = Nothing
+    min' [x] = Just x
+    min' (x:xs) = let result = min' xs
+                    in 
+                        case result of
+                            (Just small) -> if x <= small then (Just x) else (Just small)
+                            Nothing -> Just x
 
 

@@ -48,7 +48,7 @@ module TriTree where
     --  Consume a list of values and a TriTree
     --  Produce a new TriTree which contains all of the values from the given list
     insertList :: (Ord a) => [a] -> TriTree a -> TriTree a
-    insertList list tree =  foldr insert tree list
+    insertList list tree = foldr insert tree list
 
     --identical
     --  Consumes two TriTrees
@@ -73,6 +73,7 @@ module TriTree where
     --  Consume a function, f :: a -> b -> a, an inital value, and a TriTree
     --  Produce the result of using f to combine values in the TriTree
     --    Left-most value in the node, then the right-most, then the left, middle, and right subtrees
+
 
 
     --treeFoldInOrder

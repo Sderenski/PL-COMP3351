@@ -32,5 +32,10 @@ module ExamplesFour where
 
   treeMap :: (a -> b) -> BinTree a -> BinTree b
   treeMap _ EmptyTree = EmptyTree
-  treeMap f (Leaf value) = (Leaf (f value))
-  treeMap f (Node value leftChild rightChild) = (Node (f value) (treeMap f leftChild) (treeMap f rightChild))
+  treeMap f (Leaf value) = Leaf (f value)
+  treeMap f (Node value leftChild rightChild) = Node (f value) (treeMap f leftChild) (treeMap f rightChild)
+
+  instance Functor BinTree where 
+    fmap _ EmptyTree = EmptyTree
+    fmap f (Leaf value) = Leaf (f value)
+    fmap f (Node value leftChild rightChild) = Node (f value) (fmap f leftChild) (fmap f rightChild)
