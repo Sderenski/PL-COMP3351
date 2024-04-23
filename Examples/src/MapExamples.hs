@@ -57,7 +57,7 @@ module MapExamples where
     boolAnd (b:bs) = b && (boolAnd bs)
 
     boolAnd' :: [Bool] -> Bool
-    boolAnd' = foldl (&&) True
+    boolAnd' = foldl (&&) True 
 
     boolAnd'' :: [Bool] -> Bool
     boolAnd'' = foldr (&&) True

@@ -55,7 +55,7 @@ module TriTree where
     --  Produce True if they are exactly identical
     --  False Otherwise
     identical :: (Eq a) => TriTree a -> TriTree a -> Bool
-    identical Empty Empty = False
+    identical Empty Empty = True
     identical (Leaf x) (Leaf y) = x == y
     identical (Node x1 y1 leftTree1 midTree1 rightTree1) (Node x2 y2 leftTree2 midTree2 rightTree2) =
         x1 == x2 && y1 == y2 && identical leftTree1 leftTree2 && identical midTree1 midTree2 && identical rightTree1 rightTree2
@@ -73,17 +73,38 @@ module TriTree where
     --  Consume a function, f :: a -> b -> a, an inital value, and a TriTree
     --  Produce the result of using f to combine values in the TriTree
     --    Left-most value in the node, then the right-most, then the left, middle, and right subtrees
-
-
+    treeFoldPreOrder :: (a -> b -> a) -> a -> TriTree b -> a
+    treeFoldPreOrder _ value Empty = value
+    treeFoldPreOrder f value (Leaf v) = f value v
+    treeFoldPreOrder f value (Node v1 v2 left mid right) = 
+        let value' = f (f value v1) v2
+            value'' = treeFoldPreOrder f value' left
+            value''' = treeFoldPreOrder f value'' mid
+        in treeFoldPreOrder f value''' right
 
     --treeFoldInOrder
     --  Consume a function, f :: a -> b -> a, an initial value, and a TriTree
     --  Produce the result of using f to combine values in the TriTree.
     --    Values in the left subtree should be processed first, then the left most value,
     --    followed by middle subtree right-most value then right subtree
-
+    treeFoldInOrder :: (a -> b -> a) -> a -> TriTree b -> a
+    treeFoldInOrder _ value Empty = value
+    treeFoldInOrder f value (Leaf v) = f value v
+    treeFoldInOrder f value (Node v1 v2 left mid right) = 
+        let value' = f (treeFoldInOrder f value left) v1
+            value'' = treeFoldInOrder f value' mid
+            value''' = f value'' v2
+        in treeFoldInOrder f value''' right
 
     --treeFoldPostOrder
     --  Consume a function, f :: a -> b -> a, an initial value, and a TriTree
     --  Produce the result of using f to combine values in the TriTree
     --    Values in the subtrees should be processed first, followed by the left and right values stored in the node.
+    treeFoldPostOrder :: (a -> b -> a) -> a -> TriTree b -> a
+    treeFoldPostOrder _ value Empty = value
+    treeFoldPostOrder f value (Leaf v) = f value v
+    treeFoldPostOrder f value (Node v1 v2 left mid right) = 
+        let value' = treeFoldPostOrder f value left
+            value'' = treeFoldPostOrder f value' mid
+            value''' = treeFoldPostOrder f value'' right
+        in f (f value''' v1) v2
