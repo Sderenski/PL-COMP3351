@@ -30,7 +30,7 @@ module BoolLexer where
         c : cs | isSpace c -> lexString cs
         c : cs | isAlpha c -> getName str
         where 
-            getName st = IdToken i : lexString cs
+            getName st = lexName i : lexString cs
                             where (i, cs) = span isIdChar st
             isIdChar c = isAlpha c
     -- lexString _ = error "Syntax Error: Unrecognized Symbol"
@@ -39,7 +39,7 @@ module BoolLexer where
                     then KeywordToken i
                     else IdToken i
 
-    isReservedWord w = elem w ["Let", "In", "Lambda"]
+    isReservedWord w = elem w ["Let", "In", "Lambda", "Be"]
 
 
 

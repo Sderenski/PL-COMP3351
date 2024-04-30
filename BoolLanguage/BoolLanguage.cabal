@@ -24,7 +24,9 @@ source-repository head
 
 library
   exposed-modules:
+      BoolDefinitions
       BoolLexer
+      BoolParser
       Environment
       Lib
   other-modules:
