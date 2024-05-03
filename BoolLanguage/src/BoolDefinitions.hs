@@ -12,7 +12,14 @@ module BoolDefinitions where
                         EmptyNode
                             deriving(Show)
 
+    type Environment = [(String, ValueType)]
     
+    data ClosureType = Closure String ParseTree Environment
+                        deriving(Show)
 
+
+    data ValueType = BoolType Bool |
+                        ClosureType String ParseTree Environment
+                            deriving(Show)
     
                         

@@ -1,19 +1,20 @@
 module Environment where
+    import BoolDefinitions
     -- Maintain Association between names and values
     -- *** Data Structure Idea Behind it ***
 
     -- Create an Empty Environment
-    emptyEnv :: [(String, Bool)]
+    emptyEnv :: [(String, ValueType)]
     emptyEnv = [] 
 
     -- Extend an Environment with a new Name and Value pair
     -- **  Make this faster at some point
-    extendEnv :: (String, Bool) -> [(String, Bool)] -> [(String, Bool)]
+    extendEnv :: (String, ValueType) -> [(String, ValueType)] -> [(String, ValueType)]
     extendEnv (key, val) env = (key, val) : env
 
     -- Apply the Environment 
     --   (Lookup the name in the Association)
-    applyEnv :: String -> [(String, Bool)] -> Bool
+    applyEnv :: String -> [(String, ValueType)] -> ValueType
     applyEnv _ [] = error "Variable is Undefined"
     applyEnv key ((k, val) : remain) = if key == k
                                         then val

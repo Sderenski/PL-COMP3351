@@ -8,8 +8,12 @@ module BoolLexer where
                 | NotToken
                 | LeftParenToken
                 | RightParenToken
+                | LetToken
+                | LambdaToken
+                | CallToken
                 | IdToken String
                 | KeywordToken String
+                | EndToken
                 deriving(Show)
 
     --LexString
@@ -39,7 +43,7 @@ module BoolLexer where
                     then KeywordToken i
                     else IdToken i
 
-    isReservedWord w = elem w ["Let", "In", "Lambda", "Be"]
+    isReservedWord w = elem w ["Let", "In", "Lambda", "Be", "Call"]
 
 
 

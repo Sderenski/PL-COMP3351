@@ -3,7 +3,12 @@ module WeeklyThree where
     --vec
     --  Data type containing a list of doubles
     --  Derive show
-    data Vec = Vec [Double] deriving(Show)
+    data Vec = Vec [Double]
+
+    --Instance Show
+    instance Show Vec where
+        show :: Vec -> String
+        show (Vec xs) = "Vec " ++ show xs
 
     --Instance Num
     -- Need +, -, *, abs, signum, and from Integer
@@ -51,8 +56,27 @@ module WeeklyThree where
         (==) :: Vec -> Vec -> Bool
         (Vec xs) == (Vec ys) = and (zipWith (==) xs ys)
 
-    
+    --Intance Ord
+    --  need <= function
+    --  compare consumes two vec lists and produces a boolean
     instance Ord Vec where 
+        compare :: Vec -> Vec -> Ordering
+        compare (Vec xs) (Vec ys) = compare xs ys
+
+    class VecT a where
+        magnitude :: VecT a => a -> Double
+    
+    instance VecT Vec where
+        magnitude :: VecT Vec => Vec -> Double
+        magnitude (Vec xs) = sqrt (sum (map (^2) xs))
+
+    instance Semigroup Vec where
+        (<>) :: Vec -> Vec -> Vec
+        (Vec xs) <> (Vec ys) = Vec (zipWith (+) xs ys)
+
+    instance Monoid Vec where
+        mempty :: Vec
+        mempty = Vec (repeat 0)
         
         
 
