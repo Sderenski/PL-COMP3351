@@ -39,4 +39,11 @@ module BoolEval where
         (LetNode (IdNode param) value body) -> let result = evaluate value env
                                         in
                                             evaluate body (extendEnv (param, result) env)
-        
+        (LambdaNode (IdNode name) body) -> ClosureType name body env
+        (CallNode (IdNode name) actualParam) -> let actualValue = (evaluate actualParam env)
+                                        in
+                                            let (ClosureType paramName body funEnv) = applyEnv name env
+                                                in
+                                                    evaluate body (extendEnv (paramName, actualValue) funEnv) 
+        (ParenthesizeNode expr) -> evaluate expr env
+        unhandled -> error ("Unmatched Tree Node: " ++ show unhandled)
