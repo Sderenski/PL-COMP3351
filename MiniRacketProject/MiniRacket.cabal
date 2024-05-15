@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
-name:           DailyHaskell
+name:           MiniRacket
 version:        0.1.0.0
 description:    Stack template project for COMP 3351
-homepage:       https://github.com/githubuser/DailyHaskell#readme
-bug-reports:    https://github.com/githubuser/DailyHaskell/issues
+homepage:       https://github.com/githubuser/MiniRacket#readme
+bug-reports:    https://github.com/githubuser/MiniRacket/issues
 author:         Author name here
 maintainer:     example@example.com
-copyright:      2024 Author name here
+copyright:      2022 Author name here
 license:        BSD3
 build-type:     Simple
 extra-source-files:
@@ -20,23 +20,19 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/DailyHaskell
+  location: https://github.com/githubuser/MiniRacket
 
 library
   exposed-modules:
-      DailyEight
-      DailyFive
-      DailyFour
-      DailyNine
-      DailyOne
-      DailySeven
-      DailySix
-      DailyTen
-      DailyThree
-      DailyTwo
+      Environment
+      Error
+      Eval
+      Expr
       Lib
+      MiniRacketParser
+      Parser
   other-modules:
-      Paths_DailyHaskell
+      Paths_MiniRacket
   hs-source-dirs:
       src
   default-extensions:
@@ -65,15 +61,14 @@ library
       TypeApplications
       ConstraintKinds
   build-depends:
-      QuickCheck
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , hspec
   default-language: Haskell2010
 
-executable DailyHaskell-exe
+executable MiniRacket-exe
   main-is: Main.hs
   other-modules:
-      Paths_DailyHaskell
+      Paths_MiniRacket
   hs-source-dirs:
       app
   default-extensions:
@@ -101,29 +96,20 @@ executable DailyHaskell-exe
       ScopedTypeVariables
       TypeApplications
       ConstraintKinds
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -haddock -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -haddock -W -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      DailyHaskell
-    , QuickCheck
+      MiniRacket
     , base >=4.7 && <5
     , hspec
   default-language: Haskell2010
 
-test-suite DailyHaskell-test
+test-suite MiniRacket-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      DailyEightSpec
-      DailyFiveSpec
-      DailyFourSpec
-      DailyNineSpec
-      DailyOneSpec
-      DailySevenSpec
-      DailySixSpec
-      DailyTenSpec
-      DailyThreeSpec
-      DailyTwoSpec
-      Paths_DailyHaskell
+      EvalSpec
+      MiniRacketParserSpec
+      Paths_MiniRacket
   hs-source-dirs:
       test
   default-extensions:
@@ -151,10 +137,9 @@ test-suite DailyHaskell-test
       ScopedTypeVariables
       TypeApplications
       ConstraintKinds
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -haddock -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -haddock -W -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
-      DailyHaskell
-    , QuickCheck
+      MiniRacket
     , base >=4.7 && <5
     , hspec
   default-language: Haskell2010
