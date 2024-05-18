@@ -42,6 +42,7 @@ module Expr where
   -- these can be integers, bools, pairs, or closures
   data Value = 
         IntValue Integer
+      | CharValue Char -- Tesing
       | BoolValue Bool 
       | PairValue (Value, Value)
       | ClosureValue String String Expr ValueEnv deriving (Show, Eq)

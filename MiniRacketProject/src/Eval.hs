@@ -10,7 +10,7 @@ module Eval where
     import Control.Applicative
     import Control.Monad
     import Parser
-
+    
 
     -- we begin with an Expr, and produce a result of Either String (a, Expr). 
     -- In the result, String represents an error and contains the error message, 
@@ -88,7 +88,7 @@ module Eval where
     -- instead of generating a pattern-matching failure 
     instance MonadPlus Evaluator
     instance MonadFail Evaluator where
-    fail _ = mzero
+        fail _ = mzero
 
 
     -- TODO:
@@ -96,7 +96,8 @@ module Eval where
     evalLiteral :: Evaluator Value
     evalLiteral = do
         -- retrieve the literal value using next, and return the value
-        evalNotImplemented
+        (env, LiteralExpr ast) <- next
+        return ast
 
     -- this evaluates a list of expressions and returns a list of values
     -- by mapping an evaluator function (using <$>) over the list of expressions
@@ -117,7 +118,10 @@ module Eval where
     evalBoolExpr = do
         (env, BoolExpr op exprs) <- next
         -- TODO: implement the remainder of the evaluation
-        evalNotImplemented
+        case calcBoolList op (evalListOfExprs env exprs) of
+                Right value -> return value
+                Left err -> evalError err 
+ 
 
 
     -- performs the boolean operation on Either String Values where this works on the Values
@@ -143,7 +147,9 @@ module Eval where
     evalMathExpr = do
         (env, MathExpr op exprs) <- next
         -- TODO: implement the remainder of the evaluation
-        evalNotImplemented
+        case calcMathList op (evalListOfExprs env exprs) of
+            Right value -> return value
+            Left err -> evalError err
 
     -- evaluates a comparison, specifically equals? and <
     evalCompExpr :: Evaluator Value
@@ -183,12 +189,15 @@ module Eval where
     -- TODO: Uncomment and Implement implement these functions to make 
     --    the other the mathematic functions work
 
-    -- mulValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
+    mulValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
+    mulValList = mathOpFold (*)
 
-    -- divValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
+    -- How do I write these out when they aren't symbols.... 
+    divValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
+    divValList = mathOpFoldl div
 
-    -- modValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
-
+    modValList :: Foldable t => t (Either ErrorType Value) -> Either ErrorType Value
+    modValList = mathOpFoldl mod
 
     -- TODO: Add missing Math Operation types here
     calcMathList :: 
@@ -196,7 +205,9 @@ module Eval where
     calcMathList op lst = case op of
         Add -> addValList lst
         Sub -> subValList lst
-        _ -> error "calcMathList operation Not implemented"
+        Mul -> mulValList lst
+        Div -> divValList lst
+        Mod -> modValList lst
 
 
     {-
@@ -227,7 +238,9 @@ module Eval where
         (env, NotExpr expr) <- next
         case eval evalExpr (env, expr) of
             -- TODO resolve the different cases to evaluate NOT
-            _ -> failEval "not implemented"
+            Right (BoolValue value, _) -> return $ BoolValue $ not value
+            Right _ -> typeError "not <boolexpr> .. must evaluate to a bool type"
+            Left err -> evalError err 
 
     -- evaluates a Pair
     evalPairExpr :: Evaluator Value
@@ -250,9 +263,11 @@ module Eval where
     -- TODO: Add evaluations for each newly added expression type here
     evalExpr :: Evaluator Value
     evalExpr =
-        evalLiteral
-        <|>
-        evalPairExpr
+         evalLiteral
+        <|> evalPairExpr
+        <|> evalNotExpr
+        <|> evalBoolExpr
+        <|> evalMathExpr
 
     -- parses the string then evaluates it
     parseAndEval :: String -> Either ErrorType (Value, (ValueEnv, Expr))

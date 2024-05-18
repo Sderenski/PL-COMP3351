@@ -164,7 +164,7 @@ module Parser where
     letter = satisfies isAlpha 
 
     alphanum :: Parser Char 
-    alphanum = satisfies isAlphaNum 
+    alphanum = satisfies isAlphaNum
 
     -- this parser parses the given character
     char :: Char -> Parser Char 
@@ -209,7 +209,7 @@ module Parser where
     ident :: Parser String 
     ident = do
         x <- lower 
-        xs <- zeroOrMore alphanum 
+        xs <- zeroOrMore (alphanum <|> char '?')
         return (x:xs)
     -- parse ident "abc def"
 

@@ -3,7 +3,7 @@ module MiniRacketParser where
     import Parser
     import Expr
     import Control.Applicative
-    import Error ( ErrorType ) 
+    import Error ( ErrorType )
 
     parseBool :: Parser Bool
     parseBool = do
@@ -15,29 +15,34 @@ module MiniRacketParser where
 
 
     -- parse binary bool operations
-    -- TODO: implement parsing bool operations which have 
-    --   two parameters, these are 'and' and 'or'
     parseBoolOp :: Parser BoolOp
-    parseBoolOp = failParse "not implemented"
-        
+    parseBoolOp = do
+            parseKeyword "and" >> return And
+            <|> do
+                parseKeyword "or" >> return Or
+
 
     -- parse math operations and return the MathOp
-    -- TODO: Add the other math operations: *, div, mod
     parseMathOp :: Parser MathOp
     parseMathOp =
         do symbol "+" >> return Add
         <|> do symbol "-" >> return Sub
-        
+        <|> do symbol "*" >> return Mul
+        <|> do parseKeyword "div" >> return Div
+        <|> do parseKeyword "mod" >> return Mod
+
 
     -- parse the comparison operations and return the corresponding  CompOp
-    -- TODO: add the comparison operators: equal?, < 
     parseCompOp :: Parser CompOp
-    parseCompOp = failParse "not implemented"
+    parseCompOp =
+        do symbol "<" >> return Lt
+        <|> do parseKeyword "equal?" >> return Eq
 
     -- a literal in MiniRacket is true, false, or a number
-    -- TODO: parse the literals: true, false, and numbers
     literal :: Parser Value
-    literal = failParse "not implemented"
+    literal = (IntValue <$> int) <|> (BoolValue <$> parseBool)
+
+
 
     -- parse a literal expression, which is just a literal
     literalExpr :: Parser Expr
@@ -56,24 +61,37 @@ module MiniRacketParser where
         -- all keywords follow the identifier rules, so we'll use that
         name <- identifier
         if name `elem` keywordList && keyword == name
-        then return name
-        else failParse $ "saw " ++ name ++ ", expected " ++ keyword
+            then return name
+            else failParse $ "saw " ++ name ++ ", expected " ++ keyword
 
 
     -- TODO: parse not expressions, note that "not" is a keyword,
     -- (HINT: you should use parseKeyword)
     notExpr :: Parser Expr
-    notExpr = failParse "not implemented"
+    notExpr = do
+        parseKeyword "not"
+        NotExpr <$> parseExpr
 
     -- TODO: parse boolean expressions
     -- a bool expression is the operator followed by one or more expressions
     boolExpr :: Parser Expr
-    boolExpr = failParse "not implemented"
+    boolExpr = do
+        operation <- parseBoolOp
+        values <- oneOrMore parseExpr
+        return (BoolExpr operation values)
+
 
     -- TODO: parse maths expressions
     -- a math expression is the operator followed by one or more expressions
     mathExpr :: Parser Expr
-    mathExpr = failParse "not implemented"
+    mathExpr = do
+        operation <- parseMathOp
+        -- It doesn't seem to eat the space between integer values... Why
+        -- Would a case depending on the operation mean that the system could take more values to the param
+        val2 <- oneOrMore (eatspace >> parseExpr)
+        return (MathExpr operation val2)
+
+
 
     -- a comparison expression is the comparison operator
     --   followed by two expressions
@@ -88,11 +106,11 @@ module MiniRacketParser where
 
     -- note that this is syntactic sugar, cons is just replaced by a 
     --    PairExpr abstract syntax tree 
-    consExpr :: Parser Expr 
-    consExpr = do 
+    consExpr :: Parser Expr
+    consExpr = do
         symbol "cons"
-        expr1 <- parseExpr 
-        PairExpr expr1 <$> parseExpr 
+        expr1 <- parseExpr
+        PairExpr expr1 <$> parseExpr
 
     parseParens :: Parser Expr -> Parser Expr
     parseParens p = do
@@ -106,17 +124,22 @@ module MiniRacketParser where
     -- TODO: Add new expression types here
     parseExpr :: Parser Expr
     parseExpr = do
-        parseParens notExpr
+        literalExpr
         <|> parseParens parseExpr
         <|> parseParens compExpr
         <|> parseParens pairExpr
         <|> parseParens consExpr
+        <|> parseParens notExpr
+        <|> parseParens boolExpr
+        <|> parseParens mathExpr
+
+
 
 
     -- a helper function for testing parsing
     --   To use simply type:
     --      parseString "5" 
     --   this will use the parseExpr Parser to parse the contents of str
-    parseString :: String -> Either ErrorType (Expr, String) 
-    parseString str = do 
+    parseString :: String -> Either ErrorType (Expr, String)
+    parseString str = do
         parse parseExpr str
