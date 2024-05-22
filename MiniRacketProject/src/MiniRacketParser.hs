@@ -36,11 +36,11 @@ module MiniRacketParser where
     parseCompOp :: Parser CompOp
     parseCompOp =
         do symbol "<" >> return Lt
-        <|> do parseKeyword "equal?" >> return Eq
+        -- <|> do parseKeyword "equal?" >> return Eq
 
     -- a literal in MiniRacket is true, false, or a number
     literal :: Parser Value
-    literal = (IntValue <$> int) <|> (BoolValue <$> parseBool)
+    literal = (IntValue <$> natural) <|> (BoolValue <$> parseBool)
 
 
 
@@ -51,7 +51,7 @@ module MiniRacketParser where
 
 
     keywordList :: [String]
-    keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?"]
+    keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?", "if", "let"]
 
     -- try to parse a keyword, otherwise it is a variable, this can be
     -- used to check if the identifier we see (i.e., variable name) is
@@ -65,14 +65,12 @@ module MiniRacketParser where
             else failParse $ "saw " ++ name ++ ", expected " ++ keyword
 
 
-    -- TODO: parse not expressions, note that "not" is a keyword,
-    -- (HINT: you should use parseKeyword)
+    -- parse not expressions, note that "not" is a keyword,
     notExpr :: Parser Expr
     notExpr = do
         parseKeyword "not"
         NotExpr <$> parseExpr
 
-    -- TODO: parse boolean expressions
     -- a bool expression is the operator followed by one or more expressions
     boolExpr :: Parser Expr
     boolExpr = do
@@ -81,14 +79,11 @@ module MiniRacketParser where
         return (BoolExpr operation values)
 
 
-    -- TODO: parse maths expressions
     -- a math expression is the operator followed by one or more expressions
     mathExpr :: Parser Expr
     mathExpr = do
         operation <- parseMathOp
-        -- It doesn't seem to eat the space between integer values... Why
-        -- Would a case depending on the operation mean that the system could take more values to the param
-        val2 <- oneOrMore (eatspace >> parseExpr)
+        val2 <- oneOrMore parseExpr
         return (MathExpr operation val2)
 
 
@@ -121,19 +116,89 @@ module MiniRacketParser where
 
     -- the main parsing function which alternates between all
     -- the options you have for possible expressions
-    -- TODO: Add new expression types here
+    -- TODO: add the additional kinds of things that can be an atom:
+    --   an atom is either a var, a literal, or a negated atom
+    parseAtom :: Parser Expr
+    parseAtom = do
+        literalExpr
+        <|> varExpr
+        <|> negateAtom
+
+    -- TODO: Implement negateAtom
+    -- negate an atom, we actually only have one choice here. Our
+    -- parsing already correctly handles negative numbers, and we
+    -- cannot have negative boolean values. This leaves variables, 
+    -- but this needs to build a NegateExpr around the VarExpr.
+    negateAtom :: Parser Expr
+    negateAtom = do
+        symbol "-"
+        eatspace
+        NegateExpr <$> varExpr
+
+    -- TODO: Implement varExpr
+    -- parse a var expression, here we need to make sure that
+    -- the identifier is *not* a keyword before accepting it
+    -- i.e., we fail the parse if it is     
+    varExpr :: Parser Expr
+    varExpr = do
+        vName <- identifier
+        if vName `elem` keywordList
+            then failParse $ "Variable " ++ vName ++ " is a keyword"
+            else return (VarExpr vName)
+
+    -- TODO: Implement ifExpr
+    -- parse an if-expression, which begins with the keyword if,
+    -- and is followed by three expressions
+    ifExpr :: Parser Expr
+    ifExpr = do
+        parseKeyword "if"
+        IfExpr <$> parseExpr <*> parseExpr <*> parseExpr
+
+
+    -- TODO: Implement let expressions  
+    -- a let expression begins with the keyword let, followed by
+    -- left parenthesis, then an identifier for the name 
+    -- to be bound, an expression to bind to that name, and a right
+    -- parenthesis, and then the body of the let expression
+    letExpr :: Parser Expr
+    letExpr = do
+        parseKeyword "let"
+        symbol "("
+        -- How do I take the var expr and use it for the name 
+        name <- parseExpr
+        expr1 <- parseExpr
+        symbol ")"
+        expr2 <- parseExpr
+        case name of 
+            VarExpr vName -> return (LetExpr vName expr1 expr2)
+            _ -> failParse $ "Name wasn't a valid variable name"
+    -- TODO: Implement lambdaExpr 
+    -- parse a lambda expression which is a lambda, argument, 
+    -- and body, with proper parenthesis around it
+    lambdaExpr :: Parser Expr
+    lambdaExpr = failParse "not implemented"
+
+    --TODO: Implement applyExpr
+    -- This expression consists of a function which is being applied to 
+    --   a parameter expression.
+    applyExpr :: Parser Expr
+    applyExpr = failParse "not implemented"
+
+    -- TODO: Add any newly added kinds of expression to be parsed here
+    -- the main parsing function which alternates between all 
+    -- the options for possible expressions
     parseExpr :: Parser Expr
     parseExpr = do
-        literalExpr
+        parseAtom
+        <|> parseParens notExpr
+        <|> parseParens boolExpr
+        <|> parseParens mathExpr
         <|> parseParens parseExpr
         <|> parseParens compExpr
         <|> parseParens pairExpr
         <|> parseParens consExpr
-        <|> parseParens notExpr
-        <|> parseParens boolExpr
-        <|> parseParens mathExpr
-
-
+        <|> parseParens ifExpr
+        <|> parseParens letExpr
 
 
     -- a helper function for testing parsing

@@ -96,7 +96,7 @@ module Eval where
     evalLiteral :: Evaluator Value
     evalLiteral = do
         -- retrieve the literal value using next, and return the value
-        (env, LiteralExpr ast) <- next
+        (_, LiteralExpr ast) <- next
         return ast
 
     -- this evaluates a list of expressions and returns a list of values
@@ -268,6 +268,9 @@ module Eval where
         <|> evalNotExpr
         <|> evalBoolExpr
         <|> evalMathExpr
+        <|> evalIfExpr
+        <|> evalLetExpr
+        <|> evalVar
 
     -- parses the string then evaluates it
     parseAndEval :: String -> Either ErrorType (Value, (ValueEnv, Expr))
@@ -275,6 +278,66 @@ module Eval where
         (ast, _) <- parse parseExpr str
         -- here, [] represents the empty environment
         eval evalExpr ([], ast)
+
+
+     -- TODO: Add this to your Eval.hs file
+    -- Evaluate a let expression. This requires evaluating the
+    -- argument to the identifier. Once that is evaluated, we
+    -- bind the value to the name in a new environment, then
+    -- we evaluated the body with this new environment
+    evalLetExpr :: Evaluator Value
+    evalLetExpr = do
+        (env, LetExpr letName valexpr body) <- next
+        case getValue (eval evalExpr (env, valexpr)) of
+            -- we got a closure from it, but it doesn't have a name, 
+            -- so let's add that to the closure as its 'funname' 
+            Right (ClosureValue "" argName funBody cenv) ->
+                let env' = Environment.bindName letName (ClosureValue letName argName funBody cenv) cenv in
+                    case getValue (eval evalExpr (env', body)) of
+                        Right v -> return v
+                        Left err -> evalError err
+            Right nameval ->
+                case getValue (eval evalExpr (bindName letName nameval env, body)) of
+                    Right letval -> return letval
+                    Left err -> evalError err
+            Left err -> evalError err
+
+    -- TODO: Implement evalIfExpr
+    -- Evaluate an if expression, this requires evaluating
+    -- the first expression in the if, which is the test case.
+    -- Only until this returns a value will you evaluate one
+    -- or the other branches. You do NOT evaluate both branches,
+    -- just the 2nd expression if the test case returns true,
+    -- and the 3rd expression if the test case returns false
+    evalIfExpr :: Evaluator Value
+    evalIfExpr = do
+        (env, IfExpr boolexpr texpr fexpr) <- next
+        case eval evalExpr (env, boolexpr) of
+            Right (BoolValue v, _) ->
+                if v
+                then
+                    case eval evalExpr (env, texpr) of
+                        Right (v, _) -> return v
+                        Left err -> evalError err
+                else
+                    case eval evalExpr (env, fexpr) of
+                        Right (v, _) -> return v
+                        Left err -> evalError err
+            Right _ -> typeError "if <boolexp> ... must evaluate to type bool"
+            Left err -> evalError err
+
+    -- TODO: implement evaluating a Var
+    -- Evaluate a Var, this requires looking up the symbol
+    -- in the current environment. If it's there, we return
+    -- the value. If it's not, we generate a NoSymbol error
+    -- via: noSymbol $ "symbol " ++ name ++ " not found"
+    evalVar :: Evaluator Value
+    evalVar = do 
+        (env, VarExpr name) <- next 
+        case Environment.lookup name env of
+            Just v -> return v
+            Nothing -> noSymbol $ "symbol " ++ name ++ " not found"
+
 
 
     -- extract the value from the result, which contains extra stuff we don't need to see

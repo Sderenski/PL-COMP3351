@@ -35,6 +35,7 @@ module Expr where
       | ApplyExpr Expr Expr
       | LetExpr String Expr Expr
       | PairExpr Expr Expr 
+      | NegateExpr Expr
       | EmptyExpr 
       deriving (Show, Eq)
 
