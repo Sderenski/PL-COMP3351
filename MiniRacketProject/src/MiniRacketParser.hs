@@ -36,7 +36,7 @@ module MiniRacketParser where
     parseCompOp :: Parser CompOp
     parseCompOp =
         do symbol "<" >> return Lt
-        -- <|> do parseKeyword "equal?" >> return Eq
+        <|> do parseKeyword "equal?" >> return Eq
 
     -- a literal in MiniRacket is true, false, or a number
     literal :: Parser Value

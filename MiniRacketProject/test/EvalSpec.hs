@@ -87,5 +87,13 @@ module EvalSpec where
                 evalString "(equal? 6 5)" `shouldBe` Right (BoolValue False)
             it "evaluates (equal? 5 6)" $
                 evalString "(equal? 5 6)" `shouldBe` Right (BoolValue False)
+        
+        describe "eval If and Let Expressions" $ do
+            it "evaluates (if true 5 6)" $
+                evalString "(if true 5 6)" `shouldBe` Right (IntValue 5)
+            it "evaluates (let (test 5) (if (< test 6) 1 0))" $
+                evalString "(let (test 5) (if (< test 6) 1 0))" `shouldBe` Right (IntValue 1)
+            it "evaluates (let (test 5) (+ test 5))" $
+                evalString "(let (test 5) (+ test 5))" `shouldBe` Right (IntValue 10)
             
             

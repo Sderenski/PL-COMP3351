@@ -90,5 +90,16 @@ module MiniRacketParserSpec where
             it "parse (equal? 5 5)" $
                 parseString "(equal? 5 5)" `shouldBe` Right (CompExpr Eq (LiteralExpr (IntValue 5)) (LiteralExpr (IntValue 5)), "")
 
+        describe "parse if and variable" $ do
+            it "parse (if true 5 6)" $
+                parseString "(if true 5 6)" `shouldBe` Right (IfExpr (LiteralExpr (BoolValue True)) (LiteralExpr (IntValue 5)) (LiteralExpr (IntValue 6)), "")
+            it "parse (let (test 5) (if (< test 6) 1 0))" $
+                parseString "(let (test 5) (if (< test 6) 1 0))" `shouldBe` Right (LetExpr "test" (LiteralExpr (IntValue 5)) (IfExpr (CompExpr Lt (VarExpr "test") (LiteralExpr (IntValue 6))) (LiteralExpr (IntValue 1)) (LiteralExpr (IntValue 0))),"")
+            it "parse (let (test 5) (+ test 5))" $
+                parseString "(let (test 5) (+ test 5))" `shouldBe` Right (LetExpr "test" (LiteralExpr (IntValue 5)) (MathExpr Add [VarExpr "test",LiteralExpr (IntValue 5)]),"")
+            
+            
+
+            
 
 

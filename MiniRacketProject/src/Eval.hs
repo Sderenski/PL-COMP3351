@@ -155,7 +155,12 @@ module Eval where
     evalCompExpr :: Evaluator Value
     evalCompExpr = do
         -- TODO: implement the remainder of the evaluation
-        evalNotImplemented
+        (env, CompExpr op expr1 expr2) <- next
+        case calcCompExpr op (getValue (eval evalExpr (env, expr1))) (getValue (eval evalExpr (env, expr2))) of
+            Right value -> return value
+            Left err -> evalError err
+            
+
 
     -- takes two Either Values and runs the math op on them internally, producing the same type,
     -- but failing if either of them is not an IntVal (which are the only things math ops work on)
@@ -267,6 +272,7 @@ module Eval where
         <|> evalPairExpr
         <|> evalNotExpr
         <|> evalBoolExpr
+        <|> evalCompExpr
         <|> evalMathExpr
         <|> evalIfExpr
         <|> evalLetExpr
