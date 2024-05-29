@@ -277,6 +277,8 @@ module Eval where
         <|> evalIfExpr
         <|> evalLetExpr
         <|> evalVar
+        <|> evalApplyExpr
+        <|> evalLambdaExpr
 
     -- parses the string then evaluates it
     parseAndEval :: String -> Either ErrorType (Value, (ValueEnv, Expr))
@@ -344,6 +346,53 @@ module Eval where
             Just v -> return v
             Nothing -> noSymbol $ "symbol " ++ name ++ " not found"
 
+    -- evaluate lambdas, which requires storing the current environment as the closure,
+    -- this should result in a ClosureVal, which can later be used for apply, if it's 
+    -- a totally anonymous function, then "" is the function name, otherwise if it was
+    -- built with a let expression, then the let name is its name.
+    evalLambdaExpr :: Evaluator Value
+    evalLambdaExpr = do 
+        (env, LambdaExpr formalName body) <- next
+        return $ ClosureValue "" formalName body env
+
+    -- TODO: Implement callFun
+    -- callFun expects a closure and a value. Inside the closure, 
+    -- we find the argument name (which can be used in the body). This
+    -- argument name is bound to the value in the *Closure's* environment.
+    -- The body of the function is then evaluated using this environment,
+    -- not the current environment. 
+    --
+    -- To get recursion to work (as an Achievement), you must add
+    -- the function name to the closure's environment too before you
+    -- evaluate the expression. This ensures that recursion will work 
+    -- because if it evaluates the body, it will know that the function 
+    -- already exists--this call to eval will result in a complicated value
+    callFun :: Value -> Value -> Either ErrorType Value
+    callFun c@(ClosureValue funName argName body cenv) argVal =
+        let env = Environment.bindName argName argVal cenv
+            env' = Environment.bindName funName c env in
+            getValue $ eval evalExpr (env', body)
+    callFun _ _ = error "callFun must have a closure passed to it"
+
+    -- TODO: Implement function application
+    -- Evaluate apply, which is a function call to an argument. 
+    -- The first expression needs to evaluate to a closure from
+    -- a lambda expression or a let binding. The second expression
+    -- is is evaluated to give the resulting value to the function.
+    -- with this, we then use the callFun function to evalute
+    -- the function call
+    evalApplyExpr :: Evaluator Value
+    evalApplyExpr = do
+        (env, ApplyExpr funExpr argExpr) <- next
+        case getValue (eval evalExpr (env, funExpr)) of
+            Right c@(ClosureValue funName argName body cenv) ->
+                case getValue (eval evalExpr (env, argExpr)) of
+                    Right v -> case callFun c v of
+                        Right v -> return v
+                        Left err -> evalError err
+                    Left err -> evalError err
+            Right _ -> evalError $ EvalError "In apply expressions, (f a), f must evaluate to a function"
+            Left err -> evalError err
 
 
     -- extract the value from the result, which contains extra stuff we don't need to see

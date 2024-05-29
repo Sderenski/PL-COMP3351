@@ -51,7 +51,7 @@ module MiniRacketParser where
 
 
     keywordList :: [String]
-    keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?", "if", "let"]
+    keywordList = ["false", "true", "not", "and", "or", "div", "mod", "equal?", "if", "let", "lambda"]
 
     -- try to parse a keyword, otherwise it is a variable, this can be
     -- used to check if the identifier we see (i.e., variable name) is
@@ -121,8 +121,8 @@ module MiniRacketParser where
     parseAtom :: Parser Expr
     parseAtom = do
         literalExpr
-        <|> varExpr
         <|> negateAtom
+        <|> varExpr
 
     -- TODO: Implement negateAtom
     -- negate an atom, we actually only have one choice here. Our
@@ -169,20 +169,31 @@ module MiniRacketParser where
         expr1 <- parseExpr
         symbol ")"
         expr2 <- parseExpr
-        case name of 
+        case name of
             VarExpr vName -> return (LetExpr vName expr1 expr2)
             _ -> failParse $ "Name wasn't a valid variable name"
+
     -- TODO: Implement lambdaExpr 
     -- parse a lambda expression which is a lambda, argument, 
     -- and body, with proper parenthesis around it
     lambdaExpr :: Parser Expr
-    lambdaExpr = failParse "not implemented"
+    lambdaExpr = do
+        parseKeyword "lambda"
+        symbol "("
+        arg <- parseExpr
+        symbol ")"
+        exprs <- parseExpr
+        case arg of
+            VarExpr vName -> return (LambdaExpr vName exprs)
+            _ -> failParse $ "arg wasn't valid variable"
 
     --TODO: Implement applyExpr
     -- This expression consists of a function which is being applied to 
     --   a parameter expression.
     applyExpr :: Parser Expr
-    applyExpr = failParse "not implemented"
+    applyExpr = do
+        lamFunc <- parseExpr
+        ApplyExpr lamFunc <$> parseExpr
 
     -- TODO: Add any newly added kinds of expression to be parsed here
     -- the main parsing function which alternates between all 
@@ -199,6 +210,8 @@ module MiniRacketParser where
         <|> parseParens consExpr
         <|> parseParens ifExpr
         <|> parseParens letExpr
+        <|> parseParens lambdaExpr
+        <|> parseParens applyExpr
 
 
     -- a helper function for testing parsing

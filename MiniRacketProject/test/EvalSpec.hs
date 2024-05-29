@@ -95,5 +95,30 @@ module EvalSpec where
                 evalString "(let (test 5) (if (< test 6) 1 0))" `shouldBe` Right (IntValue 1)
             it "evaluates (let (test 5) (+ test 5))" $
                 evalString "(let (test 5) (+ test 5))" `shouldBe` Right (IntValue 10)
+
+        describe "eval lambda and apply expressions" $ do
+            it "evaluates (lambda (x) (+ x 1))" $
+                evalString "(lambda (x) (+ x 1))" `shouldBe` Right (ClosureValue "" "x" (MathExpr Add [VarExpr "x",LiteralExpr (IntValue 1)]) [])
+            
+            it "evaluates (lambda (y) (* y 5))" $
+                evalString "(lambda (y) (* y 5))" `shouldBe` Right (ClosureValue "" "y" (MathExpr Mul [VarExpr "y",LiteralExpr (IntValue 5)]) [])
+            
+            it "evaluates (lambda (y) (let (x 5) (* y x)))" $
+                evalString "(lambda (y) (let (x 5) (* y x)))" `shouldBe` Right (ClosureValue "" "y" (LetExpr "x" (LiteralExpr (IntValue 5)) (MathExpr Mul [VarExpr "y",VarExpr "x"])) [])
+            
+            it "evaluates ((lambda (y) (let (x 5) (* y x))) 4)" $
+                evalString "((lambda (y) (let (x 5) (* y x))) 4)" `shouldBe` Right (IntValue 20)
+
+            it "evaluates (let (diff 21) ((lambda (x) (- x 18)) diff))" $
+                evalString "(let (diff 21) ((lambda (x) (- x 18)) diff))" `shouldBe` Right (IntValue 3)
+
+            it "evaluates ((lambda (x) (+ x 1)) 2)" $
+                evalString "((lambda (x) (+ x 1)) 2)" `shouldBe` Right (IntValue 3)
+
+            it "evaluates (let (f (lambda (x) (+ x 1))) (f 2))" $
+                evalString "(let (f (lambda (x) (+ x 1))) (f 2))" `shouldBe` Right (IntValue 3)
+            
+            it "evaluates (let (f (lambda (x) (if (< x 10) (f (+ x 1)) x))) (f 0))" $
+                evalString "(let (f (lambda (x) (if (< x 10) (f (+ x 1)) x))) (f 0))" `shouldBe` Right (IntValue 10)
             
             

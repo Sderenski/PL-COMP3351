@@ -97,9 +97,37 @@ module MiniRacketParserSpec where
                 parseString "(let (test 5) (if (< test 6) 1 0))" `shouldBe` Right (LetExpr "test" (LiteralExpr (IntValue 5)) (IfExpr (CompExpr Lt (VarExpr "test") (LiteralExpr (IntValue 6))) (LiteralExpr (IntValue 1)) (LiteralExpr (IntValue 0))),"")
             it "parse (let (test 5) (+ test 5))" $
                 parseString "(let (test 5) (+ test 5))" `shouldBe` Right (LetExpr "test" (LiteralExpr (IntValue 5)) (MathExpr Add [VarExpr "test",LiteralExpr (IntValue 5)]),"")
+
+            it "parse - diff" $
+                parseString "- diff" `shouldBe` Right (NegateExpr (VarExpr "diff"),"")
+            it "parse - x" $
+                parseString "- x" `shouldBe` Right (NegateExpr (VarExpr "x"),"")
+
+        
+        describe "parse Lambda and apply Expressions" $ do
+            it "parse (lambda (x) (+ x 1))" $
+                parseString "(lambda (x) (+ x 1))" `shouldBe` Right (LambdaExpr "x" (MathExpr Add [VarExpr "x",LiteralExpr (IntValue 1)]),"")
             
+            it "parse (lambda (y) (* y 5))" $
+                parseString "(lambda (y) (* y 5))" `shouldBe` Right (LambdaExpr "y" (MathExpr Mul [VarExpr "y",LiteralExpr (IntValue 5)]),"")
             
+            it "parse (lambda (var) (- var 7))" $
+                parseString "(lambda (var) (- var 7))" `shouldBe` Right (LambdaExpr "var" (MathExpr Sub [VarExpr "var",LiteralExpr (IntValue 7)]),"")
+
+            it "parse ((lambda (var) (- var 7)) 10)" $
+                parseString "((lambda (var) (- var 7)) 10)" `shouldBe` Right (ApplyExpr (LambdaExpr "var" (MathExpr Sub [VarExpr "var",LiteralExpr (IntValue 7)])) (LiteralExpr (IntValue 10)),"")
+            
+            it "parse ((lambda (x) (+ x 1)) 2)" $
+                parseString "((lambda (x) (+ x 1)) 2)" `shouldBe` Right (ApplyExpr (LambdaExpr "x" (MathExpr Add [VarExpr "x",LiteralExpr (IntValue 1)])) (LiteralExpr (IntValue 2)),"")
+
+            it "parse (let (diff 21) ((lambda (x) (- x 18)) diff))" $
+                parseString "(let (diff 21) ((lambda (x) (- x 18)) diff))" `shouldBe` Right (LetExpr "diff" (LiteralExpr (IntValue 21)) (ApplyExpr (LambdaExpr "x" (MathExpr Sub [VarExpr "x",LiteralExpr (IntValue 18)])) (VarExpr "diff")),"")
+
+            it "parse (let (f (lambda (x) (if (< x 10) (f (+ x 1)) x))) (f 0))" $
+                 parseString "(let (f (lambda (x) (if (< x 10) (f (+ x 1)) x))) (f 0))" `shouldBe` Right (LetExpr "f" (LambdaExpr "x" (IfExpr (CompExpr Lt (VarExpr "x") (LiteralExpr (IntValue 10))) (ApplyExpr (VarExpr "f") (MathExpr Add [VarExpr "x",LiteralExpr (IntValue 1)])) (VarExpr "x"))) (ApplyExpr (VarExpr "f") (LiteralExpr (IntValue 0))),"")
+
+            it "parse (let (f (lambda (x) (+ x 1))) (f 2))" $
+                parseString "(let (f (lambda (x) (+ x 1))) (f 2))" `shouldBe` Right (LetExpr "f" (LambdaExpr "x" (MathExpr Add [VarExpr "x",LiteralExpr (IntValue 1)])) (ApplyExpr (VarExpr "f") (LiteralExpr (IntValue 2))),"")
 
             
-
 
